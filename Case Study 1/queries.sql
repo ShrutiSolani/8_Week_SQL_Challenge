@@ -102,3 +102,7 @@
 | C           | ramen        |
 
 ---
+
+## Query 6
+-- 6. Which item was purchased first by the customer after they became a member?
+
