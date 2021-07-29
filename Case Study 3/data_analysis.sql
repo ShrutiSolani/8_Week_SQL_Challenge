@@ -36,26 +36,28 @@
 **Query #3**
 -- What plan start_date values occur after the year 2020 for our dataset? Show the breakdown by count of events for each plan_name
 
-    SELECT DATE_TRUNC('MONTH', START_DATE) AS START_DATE, PLAN_ID, COUNT(PLAN_ID)
-    FROM FOODIE_FI.SUBSCRIPTIONS
+    SELECT DATE_TRUNC('MONTH', START_DATE) AS START_DATE, SUB.PLAN_ID, PLAN_NAME, COUNT(SUB.PLAN_ID)
+    FROM FOODIE_FI.SUBSCRIPTIONS SUB JOIN FOODIE_FI.PLANS PL ON SUB.PLAN_ID = PL.PLAN_ID 
     WHERE START_DATE > '2020-12-31'
-    GROUP BY DATE_TRUNC('MONTH', START_DATE), PLAN_ID
+    GROUP BY DATE_TRUNC('MONTH', START_DATE), SUB.PLAN_ID, PLAN_NAME
     ORDER BY START_DATE;
 
-| start_date               | plan_id | count |
-| ------------------------ | ------- | ----- |
-| 2021-01-01T00:00:00.000Z | 4       | 19    |
-| 2021-01-01T00:00:00.000Z | 1       | 8     |
-| 2021-01-01T00:00:00.000Z | 3       | 24    |
-| 2021-01-01T00:00:00.000Z | 2       | 26    |
-| 2021-02-01T00:00:00.000Z | 3       | 17    |
-| 2021-02-01T00:00:00.000Z | 4       | 18    |
-| 2021-02-01T00:00:00.000Z | 2       | 12    |
-| 2021-03-01T00:00:00.000Z | 3       | 9     |
-| 2021-03-01T00:00:00.000Z | 2       | 15    |
-| 2021-03-01T00:00:00.000Z | 4       | 21    |
-| 2021-04-01T00:00:00.000Z | 4       | 13    |
-| 2021-04-01T00:00:00.000Z | 3       | 13    |
-| 2021-04-01T00:00:00.000Z | 2       | 7     |
+
+| start_date               | plan_id | plan_name     | count |
+| ------------------------ | ------- | ------------- | ----- |
+| 2021-01-01T00:00:00.000Z | 1       | basic monthly | 8     |
+| 2021-01-01T00:00:00.000Z | 2       | pro monthly   | 26    |
+| 2021-01-01T00:00:00.000Z | 3       | pro annual    | 24    |
+| 2021-01-01T00:00:00.000Z | 4       | churn         | 19    |
+| 2021-02-01T00:00:00.000Z | 2       | pro monthly   | 12    |
+| 2021-02-01T00:00:00.000Z | 3       | pro annual    | 17    |
+| 2021-02-01T00:00:00.000Z | 4       | churn         | 18    |
+| 2021-03-01T00:00:00.000Z | 2       | pro monthly   | 15    |
+| 2021-03-01T00:00:00.000Z | 3       | pro annual    | 9     |
+| 2021-03-01T00:00:00.000Z | 4       | churn         | 21    |
+| 2021-04-01T00:00:00.000Z | 2       | pro monthly   | 7     |
+| 2021-04-01T00:00:00.000Z | 3       | pro annual    | 13    |
+| 2021-04-01T00:00:00.000Z | 4       | churn         | 13    |
 
 ---
+
