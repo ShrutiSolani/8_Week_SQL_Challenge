@@ -58,6 +58,35 @@
 | 2021-04-01T00:00:00.000Z | 2       | pro monthly   | 7     |
 | 2021-04-01T00:00:00.000Z | 3       | pro annual    | 13    |
 | 2021-04-01T00:00:00.000Z | 4       | churn         | 13    |
+    
+---
+**Query #4**
+-- What is the customer count and percentage of customers who have churned rounded to 1 decimal place?
+
+    SELECT COUNT(CASE WHEN PLAN_ID = 4 THEN 1 END) AS CUSTOMER_COUNT, COUNT(DISTINCT CUSTOMER_ID) AS TOTAL_CUSTOMERS, ROUND(COUNT(CASE WHEN PLAN_ID = 4 THEN 1 END)* 100.0 / COUNT(DISTINCT CUSTOMER_ID), 1) AS PERCENTAGE
+    FROM FOODIE_FI.SUBSCRIPTIONS;
+
+| customer_count | total_customers | percentage |
+| -------------- | --------------- | ---------- |
+| 307            | 1000            | 30.7       |
+
+---
+**Query #5**
+-- How many customers have churned straight after their initial free trial - what percentage is this rounded to the nearest whole number?
+
+    CREATE TABLE PREV_PLAN AS (
+      SELECT *, LAG(PLAN_ID, 1) OVER(PARTITION BY CUSTOMER_ID ORDER BY START_DATE) AS PREV_PLAN_ID
+      FROM FOODIE_FI.SUBSCRIPTIONS
+    );
+
+
+    SELECT COUNT(DISTINCT CUSTOMER_ID) AS CUSTOMER_COUNT, ROUND(COUNT(DISTINCT CUSTOMER_ID)* 100.0 / 1000, 1)  AS CHURN_AFTER_TRIAL
+    FROM PREV_PLAN
+    WHERE PREV_PLAN_ID = 0 AND PLAN_ID = 4;
+
+| customer_count | churn_after_trial |
+| -------------- | ----------------- |
+| 92             | 9.2               |
 
 ---
 
