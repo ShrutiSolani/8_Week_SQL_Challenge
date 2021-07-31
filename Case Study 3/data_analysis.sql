@@ -113,9 +113,24 @@ WHERE PREV_PLAN_ID = 0
 GROUP BY PREV_PLAN.PLAN_ID, TOTAL;
 
 
-|plan_id|number	|total	|percentage|
-|-------| ------|-------|----------|
-|1	    |546 	|546	|100.0     |
-|2	    |325 	|539 	|60.3      |
-|3	    |37	    |258	|14.3      |
-|4	    |92	    |307	|30.0      |
+| plan_id | number | total | percentage |
+| ------- | ------ | ----- | ---------- |
+| 1       | 546    | 546   | 100.0      |
+| 2       | 325    | 539   | 60.3       |
+| 3       | 37     | 258   | 14.3       |
+| 4       | 92     | 307   | 30.0       |
+
+---
+**Query #8**
+-- How many customers have upgraded to an annual plan in 2020?
+
+    SELECT COUNT(DISTINCT CUSTOMER_ID) AS TOTAL
+    FROM FOODIE_FI.SUBSCRIPTIONS
+    WHERE PLAN_ID = 3 AND EXTRACT(YEAR FROM START_DATE) = 2020;
+
+| total |
+| ----- |
+| 195   |
+
+---
+
