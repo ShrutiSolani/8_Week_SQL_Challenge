@@ -89,4 +89,33 @@
 | 92             | 9.2               |
 
 ---
+**Query #6**
+-- What is the number and percentage of customer plans after their initial free trial?
 
+CREATE TABLE PREV_PLAN AS (
+      SELECT *, LAG(PLAN_ID, 1) OVER(PARTITION BY CUSTOMER_ID ORDER BY START_DATE) AS PREV_PLAN_ID
+      FROM FOODIE_FI.SUBSCRIPTIONS
+    );
+    
+CREATE TABLE CONVERSIONS AS (
+  SELECT PLAN_ID, COUNT(*) AS TOTAL
+  FROM PREV_PLAN
+  WHERE PLAN_ID IS NOT NULL
+  GROUP BY PLAN_ID
+  ORDER BY PLAN_ID
+);
+
+-- SELECT * FROM CONVERSIONS;
+
+SELECT PREV_PLAN.PLAN_ID, COUNT(DISTINCT CUSTOMER_ID) AS NUMBER, TOTAL, ROUND(COUNT(DISTINCT CUSTOMER_ID)*100.0/ TOTAL, 1) AS PERCENTAGE
+FROM PREV_PLAN JOIN CONVERSIONS ON PREV_PLAN.PLAN_ID = CONVERSIONS.PLAN_ID
+WHERE PREV_PLAN_ID = 0
+GROUP BY PREV_PLAN.PLAN_ID, TOTAL;
+
+
+|plan_id|number	|total	|percentage|
+|-------| ------|-------|----------|
+|1	    |546 	|546	|100.0     |
+|2	    |325 	|539 	|60.3      |
+|3	    |37	    |258	|14.3      |
+|4	    |92	    |307	|30.0      |
