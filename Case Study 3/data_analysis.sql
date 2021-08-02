@@ -124,23 +124,21 @@ GROUP BY PREV_PLAN.PLAN_ID, TOTAL;
 **Query #7**
 -- What is the customer count and percentage breakdown of all 5 plan_name values at 2020-12-31?
 
-    WITH next_date_cte AS (
-        SELECT *,
-                LEAD (start_date, 1) OVER (PARTITION BY customer_id ORDER BY start_date) AS next_date
-     2021-01-23'),
-      ('574', '0', '2020-10-02'),
-      ('574', '1', '2020-10-09'),   FROM foodie_fi.subscriptions
-    ),
-    customers_on_date_cte AS (
-        SELECT plan_id, COUNT(DISTINCT customer_id) AS customers
-        FROM next_date_cte
-        WHERE (next_date IS NOT NULL AND ('2020-12-31'::DATE > start_date AND '2020-12-31'::DATE < next_date))
-            OR (next_date IS NULL AND '2020-12-31'::DATE > start_date)
-        GROUP BY plan_id
-    )
-    
-    SELECT plan_id, customers, ROUND(CAST(customers::FLOAT / 1000::FLOAT * 100 AS NUMERIC), 2) AS percent
-    FROM customers_on_date_cte;
+WITH next_date_cte AS (
+    SELECT *,
+            LEAD (start_date, 1) OVER (PARTITION BY customer_id ORDER BY start_date) AS next_date
+    FROM foodie_fi.subscriptions
+),
+customers_on_date_cte AS (
+    SELECT plan_id, COUNT(DISTINCT customer_id) AS customers
+    FROM next_date_cte
+    WHERE (next_date IS NOT NULL AND ('2020-12-31'::DATE > start_date AND '2020-12-31'::DATE < next_date))
+        OR (next_date IS NULL AND '2020-12-31'::DATE > start_date)
+    GROUP BY plan_id
+)
+
+SELECT plan_id, customers, ROUND(CAST(customers::FLOAT / 1000::FLOAT * 100 AS NUMERIC), 2) AS percent
+FROM customers_on_date_cte;
 
 | plan_id | customers | percent |
 | ------- | --------- | ------- |
@@ -162,7 +160,7 @@ GROUP BY PREV_PLAN.PLAN_ID, TOTAL;
 | ----- |
 | 195   |
 
----
+---        
 **Query #9**
 -- How many days on average does it take for a customer to an annual plan from the day they join Foodie-Fi? 
         
