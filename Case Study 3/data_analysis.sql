@@ -121,6 +121,36 @@ GROUP BY PREV_PLAN.PLAN_ID, TOTAL;
 | 4       | 92     | 307   | 30.0       |
 
 ---
+**Query #7**
+-- What is the customer count and percentage breakdown of all 5 plan_name values at 2020-12-31?
+
+    WITH next_date_cte AS (
+        SELECT *,
+                LEAD (start_date, 1) OVER (PARTITION BY customer_id ORDER BY start_date) AS next_date
+     2021-01-23'),
+      ('574', '0', '2020-10-02'),
+      ('574', '1', '2020-10-09'),   FROM foodie_fi.subscriptions
+    ),
+    customers_on_date_cte AS (
+        SELECT plan_id, COUNT(DISTINCT customer_id) AS customers
+        FROM next_date_cte
+        WHERE (next_date IS NOT NULL AND ('2020-12-31'::DATE > start_date AND '2020-12-31'::DATE < next_date))
+            OR (next_date IS NULL AND '2020-12-31'::DATE > start_date)
+        GROUP BY plan_id
+    )
+    
+    SELECT plan_id, customers, ROUND(CAST(customers::FLOAT / 1000::FLOAT * 100 AS NUMERIC), 2) AS percent
+    FROM customers_on_date_cte;
+
+| plan_id | customers | percent |
+| ------- | --------- | ------- |
+| 0       | 19        | 1.90    |
+| 1       | 224       | 22.40   |
+| 2       | 326       | 32.60   |
+| 3       | 195       | 19.50   |
+| 4       | 235       | 23.50   |
+        
+---
 **Query #8**
 -- How many customers have upgraded to an annual plan in 2020?
 
@@ -131,6 +161,84 @@ GROUP BY PREV_PLAN.PLAN_ID, TOTAL;
 | total |
 | ----- |
 | 195   |
+
+---
+**Query #9**
+-- How many days on average does it take for a customer to an annual plan from the day they join Foodie-Fi? 
+        
+    WITH TRIAL_START_DATE AS (
+      SELECT CUSTOMER_ID, START_DATE
+      FROM FOODIE_FI.SUBSCRIPTIONS
+      WHERE PLAN_ID = 0
+    ),
+    ANNUAL_DATE AS (
+      SELECT CUSTOMER_ID, START_DATE AS PRO_ANNUAL_UPGRADE_DATE
+      FROM FOODIE_FI.SUBSCRIPTIONS
+      WHERE PLAN_ID = 3
+    )
+    
+    SELECT ROUND(AVG(PRO_ANNUAL_UPGRADE_DATE - START_DATE), 2) AS AVERAGE
+    FROM TRIAL_START_DATE JOIN ANNUAL_DATE ON TRIAL_START_DATE.CUSTOMER_ID = ANNUAL_DATE.CUSTOMER_ID;
+
+| average |
+| ------- |
+| 104.62  |
+
+---
+**Query #10**
+-- Can you further breakdown this average value into 30 day periods (i.e. 0-30 days, 31-60 days etc)
+    WITH TRIAL_START_DATE AS (
+      SELECT CUSTOMER_ID, START_DATE
+      FROM FOODIE_FI.SUBSCRIPTIONS
+      WHERE PLAN_ID = 0
+    ),
+    ANNUAL_DATE AS (
+      SELECT CUSTOMER_ID, START_DATE AS PRO_ANNUAL_UPGRADE_DATE
+      FROM FOODIE_FI.SUBSCRIPTIONS
+      WHERE PLAN_ID = 3
+    ),
+    WIDTH AS (
+      SELECT WIDTH_BUCKET(PRO_ANNUAL_UPGRADE_DATE - START_DATE,0, 360, 12) AS DAYS_RANGE
+      FROM ANNUAL_DATE JOIN TRIAL_START_DATE ON TRIAL_START_DATE.CUSTOMER_ID = ANNUAL_DATE.CUSTOMER_ID
+    )
+    
+    SELECT (DAYS_RANGE-1)*30 || '-' || (DAYS_RANGE)*30, COUNT(*)
+    FROM WIDTH
+    GROUP BY DAYS_RANGE
+    ORDER BY DAYS_RANGE;
+
+| ?column? | count |
+| -------- | ----- |
+| 0-30     | 48    |
+| 30-60    | 25    |
+| 60-90    | 33    |
+| 90-120   | 35    |
+| 120-150  | 43    |
+| 150-180  | 35    |
+| 180-210  | 27    |
+| 210-240  | 4     |
+| 240-270  | 5     |
+| 270-300  | 1     |
+| 300-330  | 1     |
+| 330-360  | 1     |
+
+---
+**Query #11**
+-- How many customers downgraded from a pro monthly to a basic monthly plan in 2020?
+
+    CREATE TABLE PREV_PLAN AS (
+          SELECT *, LAG(PLAN_ID, 1) OVER(PARTITION BY CUSTOMER_ID ORDER BY START_DATE) AS PREV_PLAN_ID
+          FROM FOODIE_FI.SUBSCRIPTIONS
+        );
+
+
+    SELECT COUNT(*)
+    FROM PREV_PLAN
+    WHERE PREV_PLAN_ID = 2 AND PLAN_ID = 1;
+
+| count |
+| ----- |
+| 0     |
 
 ---
 
