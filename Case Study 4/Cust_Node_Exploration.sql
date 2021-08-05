@@ -44,3 +44,22 @@
 | 5         | 88    |
 
 ---
+**Query #4**
+-- How many days on average are customers reallocated to a different node?
+
+    CREATE TABLE NEW_TABLE AS (
+      SELECT *, LEAD(START_DATE, 1) OVER(PARTITION BY CUSTOMER_ID ORDER BY START_DATE) AS NEXT_START_DATE
+      FROM DATA_BANK.CUSTOMER_NODES
+      ORDER BY CUSTOMER_ID, START_DATE
+    );
+
+    SELECT ROUND(AVG(NEXT_START_DATE - END_DATE), 1) AS AVERAGE
+    FROM NEW_TABLE;
+
+| average |
+| ------- |
+| 1.0     |
+
+---
+
+
